@@ -1,4 +1,10 @@
 # ESP32-Deauther
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/tesa-klebeband/ESP32-Deauther)
+![GitHub License](https://img.shields.io/github/license/tesa-klebeband/ESP32-Deauther)
+![GitHub Repo stars](https://img.shields.io/github/stars/tesa-klebeband/ESP32-Deauther?style=flat)
+![GitHub forks](https://img.shields.io/github/forks/tesa-klebeband/ESP32-Deauther?style=flat)
+![logo](https://github.com/user-attachments/assets/4e2ac65f-1b25-4a97-822a-6a91ca71b5be)
+
 A project for the ESP32 that allows you to deauthenticate stations connected to WiFi network
 # DISCLAIMER
 This tool has been made for educational and testing purposes only. Any misuse or illegal activities conducted with the tool are strictly prohibited. I am **not** responsible for any consequences arising from the use of the tool, which is done at your own risk.
