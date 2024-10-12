@@ -17,6 +17,9 @@ Clone this repo using:
 2) Install the PlatformIO extension in vscode
 3) Open the cloned folder in vscode and press the upload button
 
+## Installing directly from your Browser
+Open my [ESP32-Webflasher](https://tesa-klebeband.github.io/ESP32-Webflasher) in Chrome or Edge, select `ESP32-Deauther` and follow the listed instructions
+
 ## Using ESP32-Deauther
 The ESP32 hosts a WiFi network with the name of `ESP32-Deauther` and a password of `esp32wroom32`. Connect to this network and type the IP of your ESP32 (typically **192.168.4.1**) into a webbrowser of a choice. You will see the following options:
 * Rescan networks: Rescan and detect all WiFi networks in your area. After a successful scan, the networks are listed in the above table.
