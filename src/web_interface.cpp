@@ -6,6 +6,25 @@
 WebServer server(80);
 int num_networks;
 
+String getEncryptionType(wifi_auth_mode_t encryptionType) {
+  switch (encryptionType) {
+    case WIFI_AUTH_OPEN:
+      return "Open";
+    case WIFI_AUTH_WEP:
+      return "WEP";
+    case WIFI_AUTH_WPA_PSK:
+      return "WPA_PSK";
+    case WIFI_AUTH_WPA2_PSK:
+      return "WPA2_PSK";
+    case WIFI_AUTH_WPA_WPA2_PSK:
+      return "WPA_WPA2_PSK";
+    case WIFI_AUTH_WPA2_ENTERPRISE:
+      return "WPA2_ENTERPRISE";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 void redirect_root() {
   server.sendHeader("Location", "/");
   server.send(301);
@@ -60,24 +79,6 @@ void handle_root() {
   server.send(200, "text/html", html);
 }
 
-String getEncryptionType(wifi_auth_mode_t encryptionType) {
-  switch (encryptionType) {
-    case WIFI_AUTH_OPEN:
-      return "Open";
-    case WIFI_AUTH_WEP:
-      return "WEP";
-    case WIFI_AUTH_WPA_PSK:
-      return "WPA_PSK";
-    case WIFI_AUTH_WPA2_PSK:
-      return "WPA2_PSK";
-    case WIFI_AUTH_WPA_WPA2_PSK:
-      return "WPA_WPA2_PSK";
-    case WIFI_AUTH_WPA2_ENTERPRISE:
-      return "WPA2_ENTERPRISE";
-    default:
-      return "UNKNOWN";
-  }
-}
 
 void handle_deauth() {
   int wifi_number = server.arg("net_num").toInt();
