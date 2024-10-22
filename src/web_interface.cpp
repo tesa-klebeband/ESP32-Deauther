@@ -15,9 +15,11 @@ void handle_root() {
   String html = "<html><body>";
   html += "<h1>ESP32-Deauther</h1>";
   html += "<h2>WiFi Networks:</h2>";
-  html += "<table border='1'><tr><th>Number</th><th>SSID</th><th>BSSID</th><th>Channel</th><th>RSSI</th></tr>";
+  html += "<table border='1'><tr><th>Number</th><th>SSID</th><th>BSSID</th><th>Channel</th><th>RSSI</th><th>Encryption</th></tr>";
   for (int i = 0; i < num_networks; i++) {
-    html += "<tr><td>" + String(i) + "</td><td>" + WiFi.SSID(i) + "</td><td>" + WiFi.BSSIDstr(i) + "</td><td>" + String(WiFi.channel(i)) + "</td><td>" + String(WiFi.RSSI(i)) + "</td></tr>";
+    String encryption = getEncryptionType(WiFi.encryptionType(i));
+    html += "<tr><td>" + String(i) + "</td><td>" + WiFi.SSID(i) + "</td><td>" + WiFi.BSSIDstr(i) + "</td><td>" + 
+            String(WiFi.channel(i)) + "</td><td>" + String(WiFi.RSSI(i)) + "</td><td>" + encryption + "</td></tr>";
   }
   html += "</table>";
   html += "<form method='post' action='/rescan'><input type='submit' value='Rescan networks'></form><hr>";
@@ -56,6 +58,25 @@ void handle_root() {
   
   html += "</body></html>";
   server.send(200, "text/html", html);
+}
+
+String getEncryptionType(wifi_auth_mode_t encryptionType) {
+  switch (encryptionType) {
+    case WIFI_AUTH_OPEN:
+      return "Open";
+    case WIFI_AUTH_WEP:
+      return "WEP";
+    case WIFI_AUTH_WPA_PSK:
+      return "WPA_PSK";
+    case WIFI_AUTH_WPA2_PSK:
+      return "WPA2_PSK";
+    case WIFI_AUTH_WPA_WPA2_PSK:
+      return "WPA_WPA2_PSK";
+    case WIFI_AUTH_WPA2_ENTERPRISE:
+      return "WPA2_ENTERPRISE";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 void handle_deauth() {
