@@ -17,7 +17,18 @@ void setup() {
 
   WiFi.mode(WIFI_MODE_AP);
   WiFi.softAP(AP_SSID, AP_PASS);
+  esp_wifi_set_max_tx_power(78);  // Sets TX power to maximum (20dBm)
 
+  // Disable 802.11b mode for better performance
+  esp_wifi_config_80211_tx_rate(WIFI_IF_AP, WIFI_PHY_RATE_MCS0_LGI);
+
+  // Set WiFi protocol to 802.11n for improved speed
+  esp_wifi_set_protocol(WIFI_IF_AP, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+
+  // Disable power save mode for better responsiveness
+  esp_wifi_set_ps(WIFI_PS_NONE);
+
+  // Start the web interface
   start_web_interface();
 }
 
