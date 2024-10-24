@@ -15,13 +15,13 @@ extern "C" int ieee80211_raw_frame_sanity_check(int32_t arg, int32_t arg2, int32
 esp_err_t esp_wifi_80211_tx(wifi_interface_t ifx, const void *buffer, int len, bool en_sys_seq);
 
 IRAM_ATTR void sniffer(void *buf, wifi_promiscuous_pkt_type_t type) {
-  const wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)buf;
-  const wifi_packet_t *sniffed_packed = (wifi_packet_t *)pkt->payload;
-  const mac_hdr_t *mac_header = &sniffed_packed->hdr;
+  const wifi_promiscuous_pkt_t *raw_packet = (wifi_promiscuous_pkt_t *)buf;
+  const wifi_packet_t *packet = (wifi_packet_t *)raw_packet->payload;
+  const mac_hdr_t *mac_header = &packet->hdr;
 
-  const uint16_t pkt_length = pkt->rx_ctrl.sig_len - sizeof(mac_hdr_t);
+  const uint16_t packet_length = raw_packet->rx_ctrl.sig_len - sizeof(mac_hdr_t);
 
-  if (pkt_length < 0) return;
+  if (packet_length < 0) return;
 
   if (deauth_type == DEAUTH_TYPE_SINGLE) {
     if (memcmp(mac_header->dest, deauth_frame.sender, 6) == 0) {
