@@ -1,0 +1,406 @@
+    <div id="page-loader" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;background:rgba(255,255,255,0.7);align-items:center;justify-content:center;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+            <span class="loader" style="width:48px;height:48px;border-width:6px;"></span>
+            <span style="margin-top:16px;color:#3498db;font-weight:bold;font-size:1.2em;">Scanning...</span>
+        </div>
+    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-Deauther test</title>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #3498db;
+        }
+        tr.network-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        tr.network-row:hover {
+            background-color: #d6eaf8 !important;
+        }
+        .loader {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 4px solid #3498db;
+            border-radius: 50%;
+            border-top: 4px solid transparent;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            transition: border-color 0.3s;
+        }
+        select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+            margin-bottom: 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            white-space: nowrap;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+            .table-responsive {
+                margin-bottom: 10px;
+            }
+            form {
+                padding: 10px;
+            }
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>ESP32-Deauther Test</h1>
+    <p>Welcome to the ESP32-Deauther web interface. Use this page to manage WiFi networks and perform deauthentication attacks.</p>
+    <h2>WiFi Networks</h2>
+    <div class="table-responsive">
+            <table id="networks-table">
+                <tr>
+                        <th>Number</th>
+                        <th>SSID</th>
+                        <th>BSSID</th>
+                        <th>Channel</th>
+                        <th>RSSI</th>
+                        <th>Encryption</th>
+                </tr>
+                <tr class="network-row" data-number="1" data-ssid="ExampleNetwork" data-bssid="00:11:22:33:44:55" data-channel="6" data-rssi="-70 dBm" data-encryption="WPA2">
+                        <td>1</td>
+                        <td>ExampleNetwork</td>
+                        <td>00:11:22:33:44:55</td>
+                        <td>6</td>
+                        <td>-70 dBm</td>
+                        <td>WPA2</td>
+                </tr>
+                <tr class="network-row" data-number="2" data-ssid="AnotherNetwork" data-bssid="66:77:88:99:AA:BB" data-channel="11" data-rssi="-65 dBm" data-encryption="WPA3">
+                        <td>2</td>
+                        <td>AnotherNetwork</td>
+                        <td>66:77:88:99:AA:BB</td>
+                        <td>11</td>
+                        <td>-65 dBm</td>
+                        <td>WPA3</td>
+                </tr>
+                <tr class="network-row" data-number="3" data-ssid="OpenNetwork" data-bssid="CC:DD:EE:FF:00:11" data-channel="1" data-rssi="-80 dBm" data-encryption="Open">
+                        <td>3</td>
+                        <td>OpenNetwork</td>
+                        <td>CC:DD:EE:FF:00:11</td>
+                        <td>1</td>
+                        <td>-80 dBm</td>
+                        <td>Open</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Modal -->
+        <div id="networkModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2>Network Details</h2>
+                <div id="modalDetails">
+                    <!-- Details will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" onclick="rescanNewtork(event)" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:4px;background-color:#3498db;color:white;border:none;cursor:pointer;transition:background-color 0.3s;">Rescan networks</button>
+    <form method="post" action="/deauth">
+        <h2>Launch Deauth-Attack</h2>
+        <select name="net_num" id="networkSelect">
+          <option disabled selected>Select Network Number</option>
+        </select> 
+        <select name="reason">
+          <option disabled selected>Select Reason</option>
+          <option value="0">0 - Reserved</option>
+          <option value="1">1 - Unspecified reason</option>
+          <option value="2">2 - Previous authentication no longer valid</option>
+          <option value="3">3 - Leaving or has left IBSS or ESS</option>
+          <option value="4">4 - Disassociated due to inactivity</option>
+          <option value="5">5 - WAP unable to handle all STAs</option>
+          <option value="6">6 - Class 2 frame from nonauthenticated STA</option>
+          <option value="7">7 - Class 3 frame from nonassociated STA</option>
+          <option value="8">8 - Leaving or has left BSS</option>
+          <option value="9">9 - STA not authenticated with responding STA</option>
+          <option value="10">10 - Power Capability element unacceptable</option>
+          <option value="11">11 - Supported Channels element unacceptable</option>
+          <option value="12">12 - BSS Transition Management</option>
+          <option value="13">13 - Invalid element</option>
+          <option value="14">14 - Message integrity code failure</option>
+          <option value="15">15 - 4-Way Handshake timeout</option>
+          <option value="16">16 - Group Key Handshake timeout</option>
+          <option value="17">17 - Element in 4-Way Handshake different</option>
+          <option value="18">18 - Invalid group cipher</option>
+          <option value="19">19 - Invalid pairwise cipher</option>
+          <option value="20">20 - Invalid AKMP</option>
+          <option value="21">21 - Unsupported RSNE version</option>
+          <option value="22">22 - Invalid RSNE capabilities</option>
+          <option value="23">23 - IEEE 802.1X authentication failed</option>
+          <option value="24">24 - Cipher suite rejected by security policy</option>
+        </select>
+        <input type="submit" value="Launch Attack">
+    </form>
+    <form method="post" action="/deauth_all">
+        <h2>Deauth all Networks</h2>
+        <select name="reason">
+          <option disabled selected>Select Reason</option>
+          <option value="0">0 - Reserved</option>
+          <option value="1">1 - Unspecified reason</option>
+          <option value="2">2 - Previous authentication no longer valid</option>
+          <option value="3">3 - Leaving or has left IBSS or ESS</option>
+          <option value="4">4 - Disassociated due to inactivity</option>
+          <option value="5">5 - WAP unable to handle all STAs</option>
+          <option value="6">6 - Class 2 frame from nonauthenticated STA</option>
+          <option value="7">7 - Class 3 frame from nonassociated STA</option>
+          <option value="8">8 - Leaving or has left BSS</option>
+          <option value="9">9 - STA not authenticated with responding STA</option>
+          <option value="10">10 - Power Capability element unacceptable</option>
+          <option value="11">11 - Supported Channels element unacceptable</option>
+          <option value="12">12 - BSS Transition Management</option>
+          <option value="13">13 - Invalid element</option>
+          <option value="14">14 - Message integrity code failure</option>
+          <option value="15">15 - 4-Way Handshake timeout</option>
+          <option value="16">16 - Group Key Handshake timeout</option>
+          <option value="17">17 - Element in 4-Way Handshake different</option>
+          <option value="18">18 - Invalid group cipher</option>
+          <option value="19">19 - Invalid pairwise cipher</option>
+          <option value="20">20 - Invalid AKMP</option>
+          <option value="21">21 - Unsupported RSNE version</option>
+          <option value="22">22 - Invalid RSNE capabilities</option>
+          <option value="23">23 - IEEE 802.1X authentication failed</option>
+          <option value="24">24 - Cipher suite rejected by security policy</option>
+        </select>
+        <input type="submit" value="Deauth All">
+    </form>
+    <form method="post" action="/stop">
+        <input type="submit" value="Stop Deauth-Attack">
+    </form>
+</body>
+<script>
+// Modal logic
+const modal = document.getElementById('networkModal');
+const closeModal = document.getElementById('closeModal');
+const modalDetails = document.getElementById('modalDetails');
+const rows = document.querySelectorAll('.network-row');
+
+rows.forEach(row => {
+    row.addEventListener('click', function() {
+        const number = this.getAttribute('data-number');
+        const ssid = this.getAttribute('data-ssid');
+        const bssid = this.getAttribute('data-bssid');
+        const channel = this.getAttribute('data-channel');
+        const rssi = this.getAttribute('data-rssi');
+        const encryption = this.getAttribute('data-encryption');
+        modalDetails.innerHTML = `
+            <p><strong>Number:</strong> ${number}</p>
+            <p><strong>SSID:</strong> ${ssid}</p>
+            <p><strong>BSSID:</strong> ${bssid}</p>
+            <p><strong>Channel:</strong> ${channel}</p>
+            <p><strong>RSSI:</strong> ${rssi}</p>
+            <p><strong>Encryption:</strong> ${encryption}</p>
+        `;
+        modal.style.display = 'block';
+    });
+});
+
+closeModal.onclick = function() {
+    modal.style.display = 'none';
+}
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+
+}
+
+function rescanNewtork(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const table = document.getElementById('networks-table');
+    const pageLoader = document.getElementById('page-loader');
+    pageLoader.style.display = 'flex';
+    fetch('/rescan', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            // Build table rows
+            let rows = `<tr><th>Number</th><th>SSID</th><th>BSSID</th><th>Channel</th><th>RSSI</th><th>Encryption</th></tr>`;
+            data.forEach(net => {
+                rows += `<tr class="network-row" data-number="${net.number}" data-ssid="${net.ssid}" data-bssid="${net.bssid}" data-channel="${net.channel}" data-rssi="${net.rssi}" data-encryption="${net.encryption}">
+                    <td>${net.number}</td>
+                    <td>${net.ssid}</td>
+                    <td>${net.bssid}</td>
+                    <td>${net.channel}</td>
+                    <td>${net.rssi}</td>
+                    <td>${net.encryption}</td>
+                </tr>`;
+            });
+            table.innerHTML = rows;
+
+            // Populate the networkSelect dropdown
+            const networkSelect = document.getElementById('networkSelect');
+            if (networkSelect) {
+                let options = '<option disabled selected>Select Network Number</option>';
+                data.forEach(net => {
+                    options += `<option value="${net.number}">${net.number} - ${net.ssid}</option>`;
+                });
+                networkSelect.innerHTML = options;
+            }
+
+            pageLoader.style.display = 'none';
+            // Re-attach modal event listeners
+            document.querySelectorAll('.network-row').forEach(row => {
+                row.addEventListener('click', function() {
+                    const number = this.getAttribute('data-number');
+                    const ssid = this.getAttribute('data-ssid');
+                    const bssid = this.getAttribute('data-bssid');
+                    const channel = this.getAttribute('data-channel');
+                    const rssi = this.getAttribute('data-rssi');
+                    const encryption = this.getAttribute('data-encryption');
+                    modalDetails.innerHTML = `
+                        <p><strong>Number:</strong> ${number}</p>
+                        <p><strong>SSID:</strong> ${ssid}</p>
+                        <p><strong>BSSID:</strong> ${bssid}</p>
+                        <p><strong>Channel:</strong> ${channel}</p>
+                        <p><strong>RSSI:</strong> ${rssi}</p>
+                        <p><strong>Encryption:</strong> ${encryption}</p>
+                    `;
+                    modal.style.display = 'block';
+                });
+            });
+        })
+        .catch(error => {
+            table.innerHTML = `<tr><th>Number</th><th>SSID</th><th>BSSID</th><th>Channel</th><th>RSSI</th><th>Encryption</th></tr><tr><td colspan='6' style='text-align:center;color:red;'>Error scanning networks</td></tr>`;
+            pageLoader.style.display = 'none';
+            console.error('Error:', error);
+        });
+}
+</script>
+</body>
+</html>
