@@ -1,8 +1,8 @@
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
-#define AP_SSID "ESP32-Deauther"
-#define AP_PASS "esp32wroom32"
+#define AP_SSID "hudhud"
+#define AP_PASS "nr3727"
 #define LED 2
 #define SERIAL_DEBUG
 #define CHANNEL_MAX 13
